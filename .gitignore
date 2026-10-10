@@ -1,0 +1,17 @@
+/bin
+/tmp
+
+# exclude Windows file's system files 
+**/.thumbnails
+**/Thumbs.db
+**/*Zone.Identifier
+
+# exclude Mac OS file's system files
+**/.DS_Store
+**/__MACOSX/
+
+# exclude VS Code IDE files
+**/.vscode
+**/*.workspace
+**/launch.json
+**/restore-terminals.json
