@@ -1,31 +1,44 @@
 package main
 
 import (
-	"app/internal/routes"
-	"fmt"
+	"context"
 	"log"
 	"net/http"
+	"time"
+
+	"app/internal/config"
+	"app/internal/database"
+	"app/internal/routes"
 )
 
 func main() {
-	handler := routes.New()
+	cfg, err := config.Load()
+	if err != nil {
+		log.Fatalf("Configuration error: %v", err)
+	}
 
-	// Маршруты для сайта услуг и блога
-	// mux.HandleFunc("GET /api/v1/posts", listPosts)
-	// mux.HandleFunc("GET /api/v1/posts/{id}", getPost) // Извлечение ID из URL
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		5*time.Second,
+	)
+	defer cancel()
 
-	fmt.Println("Server listening on :8080")
-	if err := http.ListenAndServe(":8080", handler); err != nil {
-		log.Fatal(err)
+	db, err := database.NewPostgresPool(ctx, cfg.DatabaseURL)
+	if err != nil {
+		log.Fatalf("Database connection failed: %v", err)
+	}
+	defer db.Close()
+
+	server := &http.Server{
+		Addr:              ":" + cfg.Port,
+		Handler:           routes.New(db),
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	log.Printf("Server listening on %s", server.Addr)
+
+	if err := server.ListenAndServe(); err != nil &&
+		err != http.ErrServerClosed {
+		log.Fatalf("HTTP server failed: %v", err)
 	}
 }
-
-// func listPosts(w http.ResponseWriter, r *http.Request) {
-// 	fmt.Print("Список статей")
-// }
-
-// func getPost(w http.ResponseWriter, r *http.Request) {
-// 	// Получаем динамический параметр {id} встроенным методом
-// 	id := r.PathValue("id")
-// 	fmt.Fprintf(w, "Получение статьи с ID: %s", id)
-// }
