@@ -14,7 +14,7 @@ func main() {
 	// mux.HandleFunc("GET /api/v1/posts", listPosts)
 	// mux.HandleFunc("GET /api/v1/posts/{id}", getPost) // Извлечение ID из URL
 
-	fmt.Println("Server started on :8080")
+	fmt.Println("Server listening on :8080")
 	if err := http.ListenAndServe(":8080", handler); err != nil {
 		log.Fatal(err)
 	}
